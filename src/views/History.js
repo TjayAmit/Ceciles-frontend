@@ -55,10 +55,17 @@ function RegularTables() {
         name: 'Branch',
         selector: row => row.branch,
         sortable: true,
+        width:"18%"
     },
     {
       name: 'Product ID',
       selector: row => row.product_id,
+      sortable: true,
+      width:'15%'
+    },
+    {
+      name: 'Product Name',
+      selector: row => row.product_name,
       sortable: true,
       width:'15%'
     },
@@ -82,11 +89,13 @@ function RegularTables() {
       name: 'Allocation Date',
       selector: row => row.allo_date,
       sortable: true,
+      width:"13%"
     },
     {
       name: 'Distribution Date',
       selector: row => row.dis_date,
       sortable: true,
+      width:"13%"
     },
   ]
 

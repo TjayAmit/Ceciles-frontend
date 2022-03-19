@@ -6,7 +6,8 @@ import "react-data-table-component-extensions/dist/index.css";
 import axios from "axios"
 
 // reactstrap components
-import { Card,
+import { 
+        Card,
         CardBody,
         Row,
         Col,
@@ -21,7 +22,8 @@ import { Card,
         Modal, 
         CardTitle, 
         CardFooter,
-        Spinner}
+        Spinner
+      }
 from "reactstrap"
 import { createPortal } from "react-dom";
 import { BarController } from "chart.js";
@@ -35,7 +37,8 @@ function StockAllocation(props) {
   const [summaryallocation, setSummaryAllocation] = useState([])
   const [summaryModalView, setSummaryModalView] = useState(false)
 
-  const [saveallolabel, setSaveAlloLabel] = useState('Saving Allocation...')
+  const [saveallolabel, setSaveAlloLabel] = useState('Saving Allocation')
+  const [showSpin,setShowSpin] = useState(true)
   const [saveallofeedback,setSaveAlloFeedback] = useState(false)
 
 
@@ -109,14 +112,28 @@ function StockAllocation(props) {
   const saveAllocation = async () => {
     setSaveAlloFeedback(true)
     const allocation_result = saveAllocationForDistribution()
-    setTimeout(() => {
-      setSaveAlloLabel('Allocation successfully save')
-		}, 1000);
+    axios.post("http://localhost:5000/ceciles/allocations/saveallocation").then((response) => {
+      if(response.data.success==1){
+        setShowSpin(false)
+        setSaveAlloLabel('Allocation successfully save')
+      }
+      if(response.data.success == 0){
+        setShowSpin(false)
+        setSaveAlloLabel('Problem occure while saving allocation')
+      }
+      if(response.data.success == -1){
+        setShowSpin(false)
+        setSaveAlloLabel('Problem occure while saving allocation')
+      }
+    })
   }
 
   const defaultSaveAllocation = () => {
-    setSaveAlloFeedback(false)
-    setSaveAlloLabel('Saving Allocation...')
+    setTimeout(() => {
+      setSaveAlloFeedback(false)
+      setShowSpin(true)
+      setSaveAlloLabel('Saving Allocation...')
+		}, 1000);
   }
 
   async function getAllocationSummary(){
@@ -172,6 +189,7 @@ function StockAllocation(props) {
   
   async function getBranches() {
     const { data: {data} } = await axios.get("http://localhost:5000/ceciles/models/listbranches")
+    
     setBranches(data)
   }
 
@@ -506,9 +524,7 @@ function StockAllocation(props) {
 
 <Modal isOpen={saveallofeedback} className="modal-md" modalClassName="bd-example-modal-lg" >
     <div className="modal-header    ">
-    <h4 className="modal-title" id="myLargeModalLabel">
-        Saving Allocation
-    </h4>
+      <h4 className="modal-title" id="myLargeModalLabel"></h4>
     </div>
 
     <div className="modal-body">
@@ -517,7 +533,7 @@ function StockAllocation(props) {
             <div className="form-row">
                 <Col md={12}>
                     <FormGroup className="col-md-12">
-                        <label htmlFor="label"><h4>{saveallolabel}</h4></label>
+                      {showSpin?<Spinner />:null}<label className="py-3 px-md-3" htmlFor="label"><h4>{saveallolabel}</h4></label>
                     </FormGroup>
                 </Col>
             </div>

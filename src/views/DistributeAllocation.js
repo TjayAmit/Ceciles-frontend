@@ -19,7 +19,8 @@ import { Card,
         Input, 
         Button,
         CardHeader, 
-        Modal}
+        Modal,
+        Spinner}
 from "reactstrap"
 import { createPortal } from "react-dom";
 
@@ -29,7 +30,6 @@ function DistributeAllocation(props) {
   const [listdate,setListDate] = useState({})
   
   const [allodate,setAlloDate] = useState();
-
   const [SRdate, setSRDate] = useState("");
   
   const [branches, setBranches] = useState([])
@@ -44,8 +44,13 @@ function DistributeAllocation(props) {
   //Loading animaition
   const [pending, setPending] = useState(true)
   
-  const [generatedislabel, setGenerateLabel] = useState('Generating Distribution...')
+  const [saveFeedBackDistribution,setFeedBackDistribution] = useState(false)
+  const [saveFeedLabel,setFeedLabel] = useState("Saving Distribution")
+  const [saveSpinner,setSpinner] = useState(true)
+
+  const [generatedislabel, setGenerateLabel] = useState('Generating Distribution')
   const [generatedisfeedback,setGenerateDistributionFeedback] = useState(false)
+  const [showSpin,setShowSpin] = useState(true)
 
   
 
@@ -77,32 +82,58 @@ function DistributeAllocation(props) {
   
   const generateDistribution = async () => {
     setGenerateDistributionFeedback(true)
-    await axios.put("http://localhost:5000/ceciles/distributions/generatedistribution")
+    await axios.put("http://localhost:5000/ceciles/distributions/generatedistribution",{
+      allocation_date:allodate
+    })
       .then((response) =>{
         if(response.data.success == 1){
-            console.log(response.data.message);
-            console.log(response.data);
-            setGenerateLabel(response.data.message);
-        } else {
-            console.log("response.data.message");
+            setShowSpin(false)
+            setGenerateLabel("Generating Distribution Success");
+        }
+        if(response.data.success == 0){
+          setShowSpin(false)
+          setGenerateLabel('Problem occure while saving allocation')
+        }
+        if(response.data.success == -1){
+          setShowSpin(false)
+          setGenerateLabel('Problem occure while saving allocation')
         }
     });
 	}
 
   const saveDistribution = async() => {
+    setFeedBackDistribution(true)
     await axios.post("http://localhost:5000/ceciles/distributions/save")
       .then((response) =>{
         if(response.data.success == 1){
-          console.log(response.data)
-        } else {
-            console.log(response.data);
+            setSpinner(false)
+            setFeedLabel("Distribution Save");
+        }
+        if(response.data.success == 0){
+          setSpinner(false)
+          setFeedLabel('Problem occure while saving allocation')
+        }
+        if(response.data.success == -1){
+          setSpinner(false)
+          setFeedLabel('Problem occure while saving allocation')
         }
     });
   }
   
   const defaultGenerateDistribution = () => {
-    setGenerateDistributionFeedback(false)
-    setGenerateLabel('Generating Distribution...')
+    setTimeout(() => {
+      setGenerateDistributionFeedback(false)
+      setShowSpin(true)
+      setFeedLabel('Generating Distribution')
+		}, 1000);
+  }
+  
+  const defaultSaveDistribution = () => {
+    setTimeout(() => {
+      setFeedBackDistribution(false)
+      setSpinner(true)
+      setFeedLabel('Saving Distribution')
+		}, 1000);
   }
 
 
@@ -198,13 +229,12 @@ function DistributeAllocation(props) {
       cell: row => row.percentage_quantity,
       sortable: true,
     },
-    {
-      cell: row => <Button color="success" type="button" className="btn-round">Edit</Button>,
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
-  
+    // {
+    //   cell: row => <Button color="success" type="button" className="btn-round">Edit</Button>,
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    // },
     {
       name: '',
       cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.branch,row.product_id,row.product_name,row.allocation_date) }>Delete</Button>,
@@ -298,9 +328,6 @@ function DistributeAllocation(props) {
 
       <Modal isOpen={generatedisfeedback} className="modal-md" modalClassName="bd-example-modal-lg" >
           <div className="modal-header    ">
-          <h4 className="modal-title" id="myLargeModalLabel">
-              Generating Distribution
-          </h4>
           </div>
 
           <div className="modal-body">
@@ -309,7 +336,7 @@ function DistributeAllocation(props) {
                   <div className="form-row">
                       <Col md={12}>
                           <FormGroup className="col-md-12">
-                              <label htmlFor="label"><h4>{generatedislabel}</h4></label>
+                          {showSpin?<Spinner />:null}<label className="py-3 px-md-3" htmlFor="label"><h4>{generatedislabel}</h4></label>
                           </FormGroup>
                       </Col>
                   </div>
@@ -320,6 +347,32 @@ function DistributeAllocation(props) {
           <div className="modal-footer">
               <div className="ml-auto">
                   <Button className="btn-round" color="info" size="lg" onClick={() => defaultGenerateDistribution() }>Close</Button>
+              </div>
+          </div>
+      </Modal>
+      
+
+      <Modal isOpen={saveFeedBackDistribution} className="modal-md" modalClassName="bd-example-modal-lg" >
+          <div className="modal-header    ">
+          </div>
+
+          <div className="modal-body">
+          <div className="row">
+              <div className="container">
+                  <div className="form-row">
+                      <Col md={12}>
+                          <FormGroup className="col-md-12">
+                          {saveSpinner?<Spinner />:null}<label className="py-3 px-md-3" htmlFor="label"><h4>{saveFeedLabel}</h4></label>
+                          </FormGroup>
+                      </Col>
+                  </div>
+              </div>
+          </div>
+          </div>
+
+          <div className="modal-footer">
+              <div className="ml-auto">
+                  <Button className="btn-round" color="info" size="lg" onClick={() => defaultSaveDistribution() }>Close</Button>
               </div>
           </div>
       </Modal>

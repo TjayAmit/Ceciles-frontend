@@ -70,12 +70,9 @@ var dashRoutes = [
     component: ProductTable,
     layout: "/admin",
   },
-
-  // Settings
-  
   {
-    path: "/variation",
-    name: "Variation",
+    path: "/modifiers",
+    name: "Modifiers",
     icon: "files_single-copy-04",
     component: Variation,
     layout: "/admin",

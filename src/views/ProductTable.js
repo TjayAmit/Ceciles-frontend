@@ -18,6 +18,7 @@ import {
   FormGroup,
   Input,
   Form,
+  Modal
 } from "reactstrap"
 
 import axios from "axios"
@@ -26,6 +27,45 @@ function RegularTables() {
   const [pending, setPending] = React.useState(true); 
   const [products, setProducts] = useState([])
   
+  const [modalAddProduct,setModalAddProduct] = useState(false);
+
+  const [productid,setProductID] = useState('');
+  const [productname,setProductName] = useState('');
+  const [principalid,setPrincipalID] = useState('');
+  const [principalname,setPrincipalName] = useState('');
+  const [moqlabel,setMOQLabel] = useState('');
+  const [moqvalue,setMOQValue] = useState('');
+
+
+  const addProduct = () => {
+    if(productid != '' && productname != '' && principalid != '' && principalname != '' && moqlabel != '' && moqvalue != ''){
+      axios.post(`http://localhost:5000/ceciles/products/`,{
+        productid:productid,
+        productname:productname,
+        principalid:principalid,
+        principalname:principalname,
+        moqlabel:moqlabel,
+        moqvalue:moqvalue
+      }).
+      then((response) => {
+        if(response.data.success == 1){
+          getProducts()
+          setModalAddProduct(false)
+          defaultvariable();
+        }
+      });
+    }
+  }
+
+  const defaultvariable = () => {
+    setProductID('')
+    setProductName('')
+    setPrincipalID('')
+    setPrincipalName('')
+    setMOQLabel('')
+    setMOQValue('')
+  }
+
   const columns = [
     {
         name: 'Product ID',
@@ -70,11 +110,12 @@ function RegularTables() {
     },
   })
 
+  async function getProducts() {
+    const { data: {data} } = await axios.get("http://localhost:5000/ceciles/products/all")
+    setProducts(data);
+  }
+
   useEffect(() => {
-    async function getProducts() {
-      const { data: {data} } = await axios.get("http://localhost:5000/ceciles/products/all")
-      setProducts(data);
-    }
 
     getProducts()
 
@@ -86,40 +127,93 @@ function RegularTables() {
 
   return (
     <>
-      <div className="page-header clear-filter" filter-color="blue">
+      <div className="page-header clear-filter"  size='md' filter-color="blue"></div>
         <div className="container"></div>
         <div className="content">
-        <Row>
-          <Col xs={12}>
-            <Card>
-              <CardHeader>
-              <Navbar expand="lg" color="info">
-                    <NavbarToggler>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                    </NavbarToggler>
-                    <h4>Product Master List</h4>
-                </Navbar>
-              </CardHeader>
+          <Row>
+            <Col xs={12}>
+              <Card>
+                <CardHeader>
+                  <Navbar expand="lg" className="py-2" color="light">
+                      <h4>Product Master List</h4>
+                      
+                    <Collapse navbar>
+                        <Form inline className="ml-auto">
+                            <Button color="info" type="button" className="btn-round" size="md" onClick={() => setModalAddProduct(true)}> 
+                            <i className="now-ui-icons ui-1_simple-add" /> New Product
+                            </Button>
+                        </Form>
+                    </Collapse>
+                  </Navbar>
+                </CardHeader>
 
-              <CardBody>
-                <DataTableExtensions columns={columns} data={products}>
-                  <DataTable 
-                    responsive
-                    pagination 
-                    columns={columns} 
-                    data={products} 
-                    progressPending={pending}
+                <CardBody>
+                  <DataTableExtensions columns={columns} data={products}>
+                    <DataTable 
+                      responsive
+                      pagination 
+                      columns={columns} 
+                      data={products} 
+                      progressPending={pending}
 
-                  />
-                </DataTableExtensions>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                    />
+                  </DataTableExtensions>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
         </div>
-      </div>
+        
+        <Modal isOpen={modalAddProduct} className="modal-lg" modalClassName="bd-example-modal-lg" centered>
+            <h4 className="modal-title px-4">
+                New Product
+            </h4>
+
+            <div className="modal-body">
+            <Form>
+                <div className="container">
+                    <Row xs = {2}>
+                        <Col md={6}>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="label">Product ID</label>
+                                <Input id="label" value={productid} type="text"  onChange={(e) => setProductID(e.target.value)} />
+                            </FormGroup>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="label">Product Name</label>
+                                <Input id="label" value={productname} type="text"  onChange={(e) => setProductName(e.target.value)} />
+                            </FormGroup>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="label">Principal ID</label>
+                                <Input id="label" value={principalid} type="text"  onChange={(e) => setPrincipalID(e.target.value)} />
+                            </FormGroup>
+                        </Col>
+                        <Col md={6}>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="label">UOM Label</label>
+                                <Input id="label" value={moqlabel} type="text"  onChange={(e) => setMOQLabel(e.target.value)} />
+                            </FormGroup>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="value">UOM Value</label>
+                                <Input id="value" value={moqvalue} type="text"  onChange={(e) => setMOQValue(e.target.value)}/>
+                            </FormGroup>
+                            <FormGroup className="col-md-12">
+                                <label htmlFor="value">Principal Name</label>
+                                <Input id="value" value={principalname} type="text"  onChange={(e) => setPrincipalName(e.target.value)}/>
+                            </FormGroup>
+                        </Col>
+                    </Row>
+                </div>
+            </Form>
+            </div>
+
+            <div className="modal-footer">
+              <div className="ml-auto">
+                <Button className="btn-round" color="secondary" size="md" onClick={() => setModalAddProduct(false) }>Cancel</Button>
+                <span> </span>
+                <Button className="btn-round" color="success" size="md" onClick={() => addProduct() }>Submit</Button>
+              </div>
+            </div>
+      </Modal>
     </>
   );
 }

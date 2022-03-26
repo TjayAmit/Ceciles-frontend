@@ -105,13 +105,8 @@ function StockAllocation(props) {
     setModalView(true)
   }
 
-  function saveAllocationForDistribution() {
-    return axios.post("http://localhost:5000/ceciles/allocations/saveallocation")
-   }
-
   const saveAllocation = async () => {
     setSaveAlloFeedback(true)
-    const allocation_result = saveAllocationForDistribution()
     axios.post("http://localhost:5000/ceciles/allocations/saveallocation").then((response) => {
       if(response.data.success==1){
         setShowSpin(false)
@@ -332,19 +327,19 @@ function StockAllocation(props) {
               <Col xs={12}>
                 <Card>
                   <CardHeader>
-                    <Navbar expand="lg" color="info">
+                    <Navbar expand="lg" color="light">
                       <NavbarToggler>
                           <span className="navbar-toggler-bar navbar-kebab"></span>
                           <span className="navbar-toggler-bar navbar-kebab"></span>
                           <span className="navbar-toggler-bar navbar-kebab"></span>
                       </NavbarToggler>
                       <Collapse navbar>
-                          <Form inline className="ml-auto">
-                            <Button color="success" type="button" className="btn-round" size="md" onClick={() => viewAllocationSummary()}> 
-                                Summary Allocation
+                          <Form inline className="ml-auto" md={12}>
+                            <Button color="info" type="button" className="btn-round" size="md" onClick={() => viewAllocationSummary()}> 
+                                View Summary
                             </Button>
-                            <Button color="warning" type="button" className="btn-round" size="md" onClick={() => saveAllocation()}> 
-                                Saved Allocation
+                            <Button color="secondary" type="button" className="btn-round" size="md" onClick={() => saveAllocation()}> 
+                                Save Allocation
                             </Button>
                           </Form>
                       </Collapse>
@@ -380,9 +375,6 @@ function StockAllocation(props) {
         </div>
 
         <div className="modal-body">
-          {/* {allocationItems?.map(i => {
-            console.log(i)
-          })} */}
           <DataTableExtensions columns={itm} data={item}>
             <DataTable 
               responsive
@@ -398,7 +390,7 @@ function StockAllocation(props) {
 
       
       {/* MODAL  VIEW*/}
-      <Modal isOpen={summaryModalView} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setSummaryModalView(false)}>
+      <Modal isOpen={summaryModalView} className="modal-xl" modalClassName="bd-example-modal-lg">
         <div className="modal-header">
           <h4 className="modal-title" id="myLargeModalLabel">
             Allocation Summary
@@ -422,131 +414,77 @@ function StockAllocation(props) {
         </div>
       </Modal>
 
-      {/* MODAL ADD STOCK */}
-          <Modal isOpen={modalAddStock} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setModalAddStock(false)}>
-            <div className="modal-header">
-              <h4 className="modal-title" id="myLargeModalLabel">
-                Add Stock
+        <Modal isOpen={modalEditVariation} className="modal-lg" modalClassName="bd-example-modal-lg" centered>
+              <h4 className="modal-title px-4" id="myLargeModalLabel">
+                  Update Product
               </h4>
-              <button aria-label="Close" className="close" type="button" onClick={() => setModalAddStock(false)}>
-                <span aria-hidden={true}>×</span>
-              </button>
-            </div>
-
             <div className="modal-body">
-              <div className="row">
-                <div className="container">
-                    <div className="form-row">
-                      <FormGroup className="col-md-2">
-                        <label htmlFor="branch">Branch</label>
-                        <Input id="branch" type="select" onChange={(e) => setBranch(e.target.value)}>
-                          {branches?.map(i => {
-                            return (
-                              <option> {i.branch} </option>
-                            )
-                          })}
-                        </Input>
-                      </FormGroup>
-
-                      <FormGroup className="col-md-4">
-                        <label htmlFor="inputState">Product ID</label>
-                        <Input id="product_id" type="text" onChange={(e) => setProductID(e.target.value)} />
-                      </FormGroup>
-
-                      <FormGroup className="col-md-3">
-                        <label htmlFor="inputState">Product Name</label>
-                        <Input id="product_name" type="text" onChange={(e) => setProductName(e.target.value)} />
-                      </FormGroup>
-
-                      <FormGroup className="col-md-3">
-                        <label htmlFor="inputState">Suggested Allocated Quantity</label>
-                        <Input id="suggested_allocation_quantity" type="number" onChange={(e) => setAllocatedQuantity(e.target.value)} />
-                      </FormGroup>
-                    </div>
+              <Form>
+                  <div className="container">
+                      <Row xs={2}>
+                          <Col md={6}>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="label">Allocation ID</label>
+                                  <Input id="label" value={editSugID} type="text" />
+                              </FormGroup>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="label">Porduct ID</label>
+                                  <Input id="label" value={editPID} type="text" />
+                              </FormGroup>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="value">Product Name</label>
+                                  <Input id="value" value={editPN} type="text" />
+                              </FormGroup>
+                          </Col>
+                          <Col md={6}>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="value">Percent</label>
+                                  <Input id="value" value={editPercent} type="text" />
+                              </FormGroup>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="label">Suggested Allocation</label>
+                                  <Input id="label" value={editSA} type="text" onChange={(e) => setEditSA(e.target.value)} />
+                              </FormGroup>
+                          </Col>
+                      </Row>
                   </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <div className="ml-auto">
-                <Button className="btn-round" color="info" size="lg" onClick={() => AddStock() }>Add</Button>
-              </div>
-            </div>
-          </Modal>
-
-        <Modal isOpen={modalEditVariation} className="modal-md" modalClassName="bd-example-modal-lg">
-            <div className="modal-header  ">
-            <h4 className="modal-title" id="myLargeModalLabel">
-                Update Product
-            </h4>
-            <button aria-label="Close" className="close" type="button" onClick={() => closeViewBranch()}>
-                <span aria-hidden={true}>×</span>
-            </button>
-            </div>
-
-            <div className="modal-body">
-            <div className="row">
-                <div className="container">
-                    <div className="form-row">
-                        <Col md={12}>
-                            <FormGroup className="col-md-12">
-                                <label htmlFor="label">Allocation ID</label>
-                                <Input id="label" value={editSugID} type="text" />
-                            </FormGroup>
-                            <FormGroup className="col-md-12">
-                                <label htmlFor="label">Porduct ID</label>
-                                <Input id="label" value={editPID} type="text" />
-                            </FormGroup>
-                            <FormGroup className="col-md-12">
-                                <label htmlFor="value">Product Name</label>
-                                <Input id="value" value={editPN} type="text" />
-                            </FormGroup>
-                            <FormGroup className="col-md-12">
-                                <label htmlFor="label">Suggested Allocation</label>
-                                <Input id="label" value={editSA} type="text" onChange={(e) => setEditSA(e.target.value)} />
-                            </FormGroup>
-                            <FormGroup className="col-md-12">
-                                <label htmlFor="value">Percent</label>
-                                <Input id="value" value={editPercent} type="text" />
-                            </FormGroup>
-                        </Col>
-                    </div>
-                </div>
-            </div>
+              </Form>
             </div>
 
             <div className="modal-footer">
                 <div className="ml-auto">
-                    <Button className="btn-round" color="info" size="lg" onClick={() => updateStockVariation() }>Save</Button>
+                    <Button className="btn-round" color="secondary" size="md" onClick={() => setModalEditVariation(false) }>Cancel</Button>
+                    <span> </span>
+                    <Button className="btn-round" color="success" size="md" onClick={() => updateStockVariation() }>Submit</Button>
                 </div>
             </div>
       </Modal>
+      
+      <Modal isOpen={saveallofeedback} className="modal-md" modalClassName="bd-example-modal-lg" centered>
+          <div className="modal-header    ">
+            <h4 className="modal-title" id="myLargeModalLabel"></h4>
+          </div>
 
-<Modal isOpen={saveallofeedback} className="modal-md" modalClassName="bd-example-modal-lg" >
-    <div className="modal-header    ">
-      <h4 className="modal-title" id="myLargeModalLabel"></h4>
-    </div>
+          <div className="modal-body">
+          <div className="row">
+              <div className="container">
+                  <div className="form-row">
+                      <Col md={12}>
+                          <FormGroup className="col-md-12">
+                            {showSpin?<Spinner />:null}<label className="py-3 px-md-3" htmlFor="label"><h4>{saveallolabel}</h4></label>
+                          </FormGroup>
+                      </Col>
+                  </div>
+              </div>
+          </div>
+          </div>
 
-    <div className="modal-body">
-    <div className="row">
-        <div className="container">
-            <div className="form-row">
-                <Col md={12}>
-                    <FormGroup className="col-md-12">
-                      {showSpin?<Spinner />:null}<label className="py-3 px-md-3" htmlFor="label"><h4>{saveallolabel}</h4></label>
-                    </FormGroup>
-                </Col>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <div className="modal-footer">
-        <div className="ml-auto">
-            <Button className="btn-round" color="info" size="lg" onClick={() => defaultSaveAllocation() }>Close</Button>
-        </div>
-    </div>
-</Modal>
+          <div className="modal-footer">
+              <div className="ml-auto">
+                  <Button className="btn-round" color="info" size="md" onClick={() => defaultSaveAllocation() }>Close</Button>
+              </div>
+          </div>
+      </Modal>
     </>
   );
 }

@@ -18,6 +18,7 @@ import {
   FormGroup,
   Input,
   Form,
+  Label
 } from "reactstrap"
 
 import axios from "axios"
@@ -67,7 +68,7 @@ function RegularTables() {
       name: 'Product Name',
       selector: row => row.product_name,
       sortable: true,
-      width:'15%'
+      width:'20%'
     },
     {
       name: 'SA',
@@ -153,27 +154,15 @@ function RegularTables() {
           <Col xs={12}>
             <Card>
               <CardHeader>
-              <Navbar expand="lg" color="info">
-                    <NavbarToggler>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                    </NavbarToggler>
-                    <h4>Distribution History</h4>
-                    
+              <Navbar expand="md" color="light">
                     <Collapse navbar>
                           <Form inline className="ml-auto">
-                            <Col md={6}>
-                              <span>Allocation Date</span>
-                              <div className='custom-file'>
-                                <Input id="allocation_date" defaultValue={allodate} type="date" onChange={(e) =>fetchDataBaseDate(e.target.value)} />
-                              </div>
+                            <Col inline md={6}>
+                              <Label>Allocation Date</Label><Input id="allocation_date" defaultValue={allodate} type="date" onChange={(e) =>fetchDataBaseDate(e.target.value)} />
                             </Col>
                             <Col md={6}>
-                              <span>Distribution Date</span>
-                              <div className='custom-file'>
-                                <Input id="allocation_date" defaultValue={disdate} type="date" onChange={(e) =>fetchDataBaseDate2(e.target.value)} />
-                              </div>
+                              <Label>Distribution Date</Label>
+                              <Input id="allocation_date" defaultValue={disdate} type="date" onChange={(e) =>fetchDataBaseDate2(e.target.value)} />
                             </Col>
                           </Form>
                     </Collapse>
@@ -196,7 +185,7 @@ function RegularTables() {
           </Col>
         </Row>
         </div>
-      </div>
+        </div>
     </>
   );
 }

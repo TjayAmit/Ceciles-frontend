@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Redirect } from "react-router-dom";
 import { Button, Card, CardHeader, CardBody, CardFooter, Form, Input, InputGroupAddon, InputGroupText, InputGroup, Container, Col, } from "reactstrap";
 import Axios from "axios";
+import logo from "cp-logo.png";
 
 const Login = ({ setAuth }) => {
 
@@ -10,7 +11,6 @@ const Login = ({ setAuth }) => {
             email: emailReg,
             password: passwordReg
         }).then((response) =>{
-           
             if(response.data.success == 1){
                 console.log(response.data.token);
                 setAuth(true);
@@ -38,6 +38,8 @@ const Login = ({ setAuth }) => {
         };
     }, []);
 
+    const style = {width:"69%"};
+
     return (
         <>
         <div className="login"> 
@@ -49,11 +51,9 @@ const Login = ({ setAuth }) => {
                             <Card className="card-login card-plain">
                                 <Form action="" className="form" method="post">
                                     <CardHeader className="text-center">
-                                    <img  alt="..." 
-                                            src={require("assets/img/cp-logo.png").default}
-                                            ></img>
+                                        <img  alt=" " style={style} src={logo} />
+                                        <h3>Stock Allocation System</h3>
                                     </CardHeader>
-
                                     <CardBody>
                                         <InputGroup  className={ "no-border input-lg" + (firstFocus ? " input-group-focus" : "") }>
                                             <InputGroupAddon addonType="prepend">

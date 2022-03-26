@@ -250,6 +250,7 @@ function Dashboard() {
                         className="btn-round btn-outline-default btn-icon"
                         color="default"
                       >
+                      
                         <i className="now-ui-icons loader_gear" />
                       </DropdownToggle>
                       <DropdownMenu right>

@@ -157,9 +157,16 @@ const ImportCSV = () => {
           }, 1000);
         }
         if(response.data.success == -1){
-          setTimeout(() => {
-            setStockMessage('Something went wrong');
-          }, 1000);
+          console.log(response.data.message.sqlState);
+          if(response.data.message.sqlState == 42000){
+            setTimeout(() => {
+              setStockMessage(`Error Format in ${filename}`);
+            }, 1000);
+          }else{
+            setTimeout(() => {
+              setStockMessage('Something went wrong');
+            }, 1000);
+          }
         }
       })
       .catch((error) =>{
@@ -221,8 +228,6 @@ const ImportCSV = () => {
               </CardBody>
               <CardFooter>
                 <div className="stats text-center">
-                  <i className="now-ui-icons arrows-1_refresh-69" /> 
-                    CSV File
                 </div>
               </CardFooter>
             </Card>
@@ -280,8 +285,6 @@ const ImportCSV = () => {
 
               <CardFooter>
                 <div className="stats text-center">
-                  <i className="now-ui-icons arrows-1_refresh-69" /> 
-                    CSV File
                 </div>
               </CardFooter>
             </Card>

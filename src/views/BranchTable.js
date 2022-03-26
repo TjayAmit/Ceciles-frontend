@@ -22,10 +22,15 @@ import {
 } from "reactstrap"
 
 import axios from "axios"
+import { convertToObject } from "typescript"
 
 function BranchTable() {
   const [pending, setPending] = React.useState(true); 
   const [branch, setBranch] = useState([])
+
+  const [item,setItem] = useState([]);
+  const [branchname,setbranchName] = useState('');
+  const [modalView,setModalView] = useState(false);
 
   const [actionLabel,setActionLabel] = useState('')
   const [updateaction,setUpdateAction] = useState(false);
@@ -53,6 +58,7 @@ function BranchTable() {
     setInTName(row.In_Transit_WH_Name)
     setWHCode(row.Warehouse_Code)
     setWHName(row.Warehouse_Name)
+    setAddAction(false)
     setActionLabel("Update Branch")
     setModalEditVariation(true)
     setUpdateAction(true)
@@ -72,7 +78,8 @@ function BranchTable() {
     setWHCode('')
     setWHName('')
     setUpdateAction(false)
-    setAddAction(false)
+    setUpdateAction(false)
+    setAddAction(true)
   }
 
   const addBranchData = () => {
@@ -88,7 +95,7 @@ function BranchTable() {
           getBranch()
           setModalEditVariation(false);
           defaultState();
-            console.log(response.data.message);
+          setAddAction(false)
         } else {
             console.log("response.data.message");
         }
@@ -108,7 +115,6 @@ function BranchTable() {
           getBranch()
           setModalEditVariation(false);
           defaultState();
-            console.log(response.data.message);
         } else {
             console.log("response.data.message");
         }
@@ -124,6 +130,18 @@ function BranchTable() {
     })
   }
 
+  const viewInventory = async(name) => {
+    setbranchName(name)
+    setModalView(true);
+      axios.post(`http://localhost:5000/ceciles/branches/getinventory`,{
+          branch:name
+      }).then((response) => {
+        if(response.data.success == 1){
+          setItem(response.data.data);
+        }
+      }); 
+  }
+
   const columns = [
     {
         name: 'Branch ID',
@@ -131,7 +149,7 @@ function BranchTable() {
         sortable: true,
     },
     {
-        name: 'Branch Name',
+        name: 'Name',
         selector: row => row.branch_name,
         sortable: true,
     },
@@ -144,6 +162,7 @@ function BranchTable() {
         name: 'In Transit Name',
         selector: row => row.In_Transit_WH_Name,
         sortable: true,
+        width:'17%'
     },
     {
         name: 'Warehouse Code',
@@ -154,21 +173,69 @@ function BranchTable() {
         name: 'Warehouse Name',
         selector: row => row.Warehouse_Name,
         sortable: true,
+        width:'17%'
     },
     {
-      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row)}>Edit</Button>,
+      cell: row => <Button color="info" type="button" className="btn-round" onClick={() => viewInventory(row.branch_id)}>Inventory</Button>,
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      selectableRows: true,
+      width:'10%'
+    },
+    {
+      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row.branch_name)}>Edit</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
       selectableRows: true,
     },
-  
     {
       name: '',
       cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.branch_id) }>Delete</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
+    },
+  ]
+  
+  const itm = [
+    {
+        name: 'ID',
+        selector: row => row.inventory_id,
+        sortable: true,
+        width:'10%'
+    },
+    {
+        name: 'Product ID',
+        selector: row => row.product_id,
+        sortable: true,
+        width:'20%'
+    },
+    {
+        name: 'Product Name',
+        selector: row => row.product_name,
+        sortable: true,
+        width:'30%'
+    },
+    {
+        name: 'Stock',
+        selector: row => row.quantity,
+        sortable: true,
+        width:'10%'
+    },
+    {
+        name: 'Inventory Date',
+        selector: row => row.inventory_date,
+        sortable: true,
+        width:'17%'
+    },
+    {
+      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row.inventory_id)}>Edit</Button>,
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      selectableRows: true,
     },
   ]
 
@@ -208,16 +275,11 @@ function BranchTable() {
           <Col xs={12}>
             <Card>
               <CardHeader>
-              <Navbar expand="lg" color="info">
-                    <NavbarToggler>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                        <span className="navbar-toggler-bar navbar-kebab"></span>
-                    </NavbarToggler>
+              <Navbar expand="lg" color="light">
                     <Collapse navbar>
                         <Form inline className="ml-auto">
-                          <Button color="warning" type="button" className="btn-round" size="md" onClick={() => rowAddBranch()}> 
-                              Add Branch
+                          <Button color="info" type="button" className="btn-round" size="md" onClick={() => rowAddBranch()}> 
+                          <i className="now-ui-icons ui-1_simple-add" /> New Branch
                           </Button>
                         </Form>
                     </Collapse>
@@ -239,22 +301,41 @@ function BranchTable() {
         </Row>
         </div>
         
+      {/* MODAL  VIEW*/}
+      <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setModalView(false)}>
+        <div className="modal-header">
+          <h4 className="modal-title" id="myLargeModalLabel">
+            {branchname} Inventory
+          </h4>
+          <button aria-label="Close" className="close" type="button" onClick={() => setModalView(false)}>
+            <span aria-hidden={true}>×</span>
+          </button>
+        </div>
 
-        <Modal isOpen={modalEditVariation} className="modal-md" modalClassName="bd-example-modal-lg" toggle={() => closeModal(false)}>
-            <div className="modal-header    ">
-            <h3 className="modal-title" id="myLargeModalLabel">
+        <div className="modal-body">
+          <DataTableExtensions columns={itm} data={item}>
+            <DataTable 
+              responsive
+              pagination 
+              columns={itm} 
+              data={item}
+              highlightOnHover
+              pointerOnHover
+            />
+          </DataTableExtensions>
+        </div>
+      </Modal>
+
+        <Modal isOpen={modalEditVariation} className="modal-lg" modalClassName="bd-example-modal-lg" toggle={() => closeModal(false)}>
+            <h4 className="modal-title px-4">
                 {actionLabel}
-            </h3>
-            <button aria-label="Close" className="close" type="button" onClick={() => closeModal()}>
-                <span aria-hidden={true}>×</span>
-            </button>
-            </div>
+            </h4>
 
             <div className="modal-body">
-            <div className="row">
+            <Form>
                 <div className="container">
-                    <div className="form-row">
-                        <Col md={12}>
+                    <Row xs = {2}>
+                        <Col md={6}>
                             <FormGroup className="col-md-12">
                                 <label htmlFor="label">ID</label>
                                 <Input id="label" value={editBranchID} type="text"  onChange={(e) => addaction? setBranchID(e.target.value):null} />
@@ -267,6 +348,8 @@ function BranchTable() {
                                 <label htmlFor="label">In Transit Code</label>
                                 <Input id="label" value={editInTCode} type="text"  onChange={(e) => setIntCode(e.target.value)} />
                             </FormGroup>
+                        </Col>
+                        <Col md={6}>
                             <FormGroup className="col-md-12">
                                 <label htmlFor="value">In Transit</label>
                                 <Input id="value" value={editInTName} type="text"  onChange={(e) => setInTName(e.target.value)}/>
@@ -280,24 +363,24 @@ function BranchTable() {
                                 <Input id="value" value={editWHName} type="text"  onChange={(e) => setWHName(e.target.value)}/>
                             </FormGroup>
                         </Col>
-                    </div>
+                    </Row>
                 </div>
-            </div>
+            </Form>
             </div>
 
             <div className="modal-footer">
-              {
-                updateaction?
-                <div className="ml-auto">
-                    <Button className="btn-round" color="info" size="lg" onClick={() => updateBranchData() }>Save</Button>
-                </div>:null
-              }
-              {
-                addaction? 
-                <div className="ml-auto">
-                    <Button className="btn-round" color="info" size="lg" onClick={() => addBranchData() }>Submit</Button>
-                </div>:null
-              }
+              <div className="ml-auto">
+                <Button className="btn-round" color="secondary" size="md" onClick={() => setModalEditVariation(false) }>Cancel</Button>
+                <span> </span>
+                {
+                  updateaction?
+                  <Button className="btn-round" color="success" size="md" onClick={() => updateBranchData() }>Submit</Button>:null
+                }
+                {
+                  addaction? 
+                  <Button className="btn-round" color="success" size="md" onClick={() => addBranchData() }>Submit</Button>:null
+                }
+              </div>
             </div>
       </Modal>
     </>

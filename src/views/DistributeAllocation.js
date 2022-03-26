@@ -20,7 +20,9 @@ import { Card,
         Button,
         CardHeader, 
         Modal,
-        Spinner}
+        Spinner,
+        Label,
+        NavbarBrand}
 from "reactstrap"
 import { createPortal } from "react-dom";
 
@@ -107,7 +109,7 @@ function DistributeAllocation(props) {
       .then((response) =>{
         if(response.data.success == 1){
             setSpinner(false)
-            setFeedLabel("Distribution Save");
+            setFeedLabel("Distribution Saved");
         }
         if(response.data.success == 0){
           setSpinner(false)
@@ -120,20 +122,31 @@ function DistributeAllocation(props) {
     });
   }
   
+  const rowDelete = (dis) => {
+    axios.delete(`http://localhost:5000/ceciles/distributions/`,{
+      distribution_id:dis
+    }).then(async(response) => {
+      console.log(response)
+      if(response.data.success == 1){
+        await getItem2(branchname).then((response) => {
+          setItem(response.data.data)
+        })
+      }
+      if(response.data.success == -1){
+        console.log(response.data.message)
+      }
+    });
+  }
   const defaultGenerateDistribution = () => {
-    setTimeout(() => {
-      setGenerateDistributionFeedback(false)
-      setShowSpin(true)
-      setFeedLabel('Generating Distribution')
-		}, 1000);
+    setGenerateDistributionFeedback(false)
+    setShowSpin(true)
+    setGenerateLabel('Generating Distribution')
   }
   
   const defaultSaveDistribution = () => {
-    setTimeout(() => {
-      setFeedBackDistribution(false)
-      setSpinner(true)
-      setFeedLabel('Saving Distribution')
-		}, 1000);
+    setFeedBackDistribution(false)
+    setSpinner(true)
+    setFeedLabel('Saving Distribution')
   }
 
 
@@ -229,15 +242,9 @@ function DistributeAllocation(props) {
       cell: row => row.percentage_quantity,
       sortable: true,
     },
-    // {
-    //   cell: row => <Button color="success" type="button" className="btn-round">Edit</Button>,
-    //   ignoreRowClick: true,
-    //   allowOverflow: true,
-    //   button: true,
-    // },
     {
       name: '',
-      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.branch,row.product_id,row.product_name,row.allocation_date) }>Delete</Button>,
+      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.distribution_id) }>Delete</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -247,23 +254,17 @@ function DistributeAllocation(props) {
 
   return (
     <>
-      <div className="page-header clear-filter" filter-color="blue">
+      <div className="page-header clear-filter" filter-color="blue"></div>
         <div className="container"> </div>
           <div className="content">
             <Row>
               <Col xs={12}>
                 <Card>
                   <CardHeader>
-                    <Navbar expand="lg" color="info">
-                      <NavbarToggler>
-                          <span className="navbar-toggler-bar navbar-kebab"></span>
-                          <span className="navbar-toggler-bar navbar-kebab"></span>
-                          <span className="navbar-toggler-bar navbar-kebab"></span>
-                      </NavbarToggler>
-
+                    <Navbar expand="lg" color="light">
                       <Collapse navbar>
-                          <Form inline className="auto">
-                                <span>Allocation Date</span>
+                          <Form inline className="auto" >
+                            <span >Allocation Date</span>
                             <Col md={6}> 
                               <div className='custom-file'>
                                 <Input id="allocation_date" defaultValue={allodate} type="date" onChange={(e) =>fetchDataBaseDate(e.target.value)} />
@@ -271,10 +272,10 @@ function DistributeAllocation(props) {
                             </Col>
                           </Form>
                           <Form inline className="ml-auto">
-                            <Button color="warning" type="button" className="btn-round" size="ml" onClick={() => generateDistribution()}> 
-                                Distribute
+                            <Button color="info" type="button" className="btn-round" size="ml" onClick={() => generateDistribution()}> 
+                                Generate Distribute
                             </Button>
-                            <Button color='success' type="button" className="btn-round" size="ml" onClick={() => saveDistribution()}> 
+                            <Button color='secondary' type="button" className="btn-round" size="ml" onClick={() => saveDistribution()}> 
                                 Save Distribution
                             </Button>
                           </Form>
@@ -297,8 +298,6 @@ function DistributeAllocation(props) {
                 </Card>
               </Col>
             </Row>
-        </div>
-      {/* </div> */}
       </div>
       
       {/* MODAL  VIEW*/}
@@ -326,10 +325,9 @@ function DistributeAllocation(props) {
         </div>
       </Modal>
 
-      <Modal isOpen={generatedisfeedback} className="modal-md" modalClassName="bd-example-modal-lg" >
+      <Modal isOpen={generatedisfeedback} className="modal-md" modalClassName="bd-example-modal-lg" centered>
           <div className="modal-header    ">
           </div>
-
           <div className="modal-body">
           <div className="row">
               <div className="container">
@@ -352,7 +350,7 @@ function DistributeAllocation(props) {
       </Modal>
       
 
-      <Modal isOpen={saveFeedBackDistribution} className="modal-md" modalClassName="bd-example-modal-lg" >
+      <Modal isOpen={saveFeedBackDistribution} className="modal-md" modalClassName="bd-example-modal-lg" centered>
           <div className="modal-header    ">
           </div>
 

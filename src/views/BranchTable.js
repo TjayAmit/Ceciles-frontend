@@ -145,38 +145,44 @@ function BranchTable() {
   const columns = [
     {
         name: 'Branch ID',
+        cell: row => row.branch_id,
         selector: row => row.branch_id,
         sortable: true,
     },
     {
         name: 'Name',
+        cell: row => row.branch_name,
         selector: row => row.branch_name,
         sortable: true,
     },
     {
         name: 'In Transit code',
+        cell: row => row.In_Transit_WH_code,
         selector: row => row.In_Transit_WH_code,
         sortable: true,
     },
     {
         name: 'In Transit Name',
+        cell: row => row.In_Transit_WH_Name,
         selector: row => row.In_Transit_WH_Name,
         sortable: true,
         width:'17%'
     },
     {
         name: 'Warehouse Code',
+        cell: row => row.Warehouse_Code,
         selector: row => row.Warehouse_Code,
         sortable: true,
     },
     {
         name: 'Warehouse Name',
+        cell: row => row.Warehouse_Name,
         selector: row => row.Warehouse_Name,
         sortable: true,
         width:'17%'
     },
     {
-      cell: row => <Button color="info" type="button" className="btn-round" onClick={() => viewInventory(row.branch_id)}>Inventory</Button>,
+      cell: row => <Button color="info" type="button" className="btn-round" onClick={() => viewInventory(row.branch_name)}>Inventory</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -184,7 +190,7 @@ function BranchTable() {
       width:'10%'
     },
     {
-      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row.branch_name)}>Edit</Button>,
+      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row)}>Edit</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -202,30 +208,35 @@ function BranchTable() {
   const itm = [
     {
         name: 'ID',
+        cell: row => row.inventory_id,
         selector: row => row.inventory_id,
         sortable: true,
         width:'10%'
     },
     {
         name: 'Product ID',
+        cell: row => row.product_id,
         selector: row => row.product_id,
         sortable: true,
         width:'20%'
     },
     {
         name: 'Product Name',
+        cell: row => row.product_name,
         selector: row => row.product_name,
         sortable: true,
         width:'30%'
     },
     {
         name: 'Stock',
+        cell: row => row.quantity,
         selector: row => row.quantity,
         sortable: true,
         width:'10%'
     },
     {
         name: 'Inventory Date',
+        cell: row => row.inventory_date,
         selector: row => row.inventory_date,
         sortable: true,
         width:'17%'

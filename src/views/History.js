@@ -48,52 +48,61 @@ function RegularTables() {
   const columns = [
     {
         name: 'ID',
+        cell: row => row.history_id,
         selector: row => row.history_id,
         sortable: true,
         width:'8%'
     },
     {
         name: 'Branch',
+        cell: row => row.branch,
         selector: row => row.branch,
         sortable: true,
         width:"18%"
     },
     {
       name: 'Product ID',
+      cell: row => row.product_id,
       selector: row => row.product_id,
       sortable: true,
       width:'15%'
     },
     {
       name: 'Product Name',
+      cell: row => row.product_name,
       selector: row => row.product_name,
       sortable: true,
       width:'20%'
     },
     {
       name: 'SA',
+      cell: row => row.suggested_allocation_quantity,
       selector: row => row.suggested_allocation_quantity,
       sortable: true,
       width:'8%'
     },
     {
       name: 'Distribution',
+      cell: row => row.distribution_quantity,
       selector: row => row.distribution_quantity,
       sortable: true,
     },
     {
       name: 'Percent',
+      cell: row => row.percentage_quantity,
       selector: row => row.percentage_quantity,
       sortable: true,
     },
     {
       name: 'Allocation Date',
+      cell: row => row.allo_date,
       selector: row => row.allo_date,
       sortable: true,
       width:"13%"
     },
     {
       name: 'Distribution Date',
+      cell: row => row.dis_date,
       selector: row => row.dis_date,
       sortable: true,
       width:"13%"

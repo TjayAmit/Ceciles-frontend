@@ -190,6 +190,7 @@ function DistributeAllocation(props) {
     {
         name: 'ID',
         cell: (row, index) => ++index,
+        selector: (row, index) => ++index,
         sortable: true,
         width: '5%',
         ignoreRowClick: false,
@@ -197,6 +198,7 @@ function DistributeAllocation(props) {
     {
         name: 'Branch Name',
         cell: row => row.branch,
+        selector: row => row.branch,
         sortable: true,
     },
     {
@@ -214,32 +216,38 @@ function DistributeAllocation(props) {
     {
         name: 'ID',
         cell: (row, index) => row.distribution_id,
+        selector: (row, index) => row.distribution_id,
         sortable: true,
         width: '10%',
     },
     {
         name: 'PID',
         cell: row => row.product_id,
+        selector: row => row.product_id,
         sortable: true,
     },
     {
       name: 'PName',
       cell: row => row.product_name,
+      selector: row => row.product_name,
       sortable: true,
     },
     {
       name: 'SA Qty',
       cell: row => row.suggested_allocation_quantity,
+      selector: row => row.suggested_allocation_quantity,
       sortable: true,
     },
     {
       name: 'Distribution Qty',
       cell: row => row.distribution_quantity,
+      selector: row => row.distribution_quantity,
       sortable: true,
     },
     {
       name: 'Percentage',
       cell: row => row.percentage_quantity,
+      selector: row => row.percentage_quantity,
       sortable: true,
     },
     {

@@ -203,6 +203,7 @@ function StockAllocation(props) {
     {
         name: 'ID',
         cell: (row, index) => ++index,
+        selector: (row, index) => ++index,
         sortable: true,
         width: '10%',
         ignoreRowClick: false,
@@ -210,6 +211,7 @@ function StockAllocation(props) {
     {
         name: 'Branch Name',
         cell: row => row.branch,
+        selector: row => row.branch,
         sortable: true,
     },
     {
@@ -226,53 +228,61 @@ function StockAllocation(props) {
     {
         name: 'ID',
         cell: (row, index) => row.suggested_id,
+        selector: (row, index) => row.suggested_id,
         sortable: true,
         width: '7%',
     },
     {
         name: 'PID',
         cell: row => row.product_id,
+        selector: row => row.product_id,
         width: '15%',
         sortable: true,
     },
     {
       name: 'PName',
       cell: row => row.product_name,
+      selector: row => row.product_name,
       width: '20%',
       sortable: true,
     },
-  
     {
       name: 'AS',
       cell: row => row.available_inventory,
+      selector: row => row.available_inventory,
       sortable: true,
     },
     {
       name: 'SQ',
       cell: row => row.sold_quantity,
+      selector: row => row.sold_quantity,
       sortable: true,
     },
   
     {
       name: 'UOM',
       cell: row => row.uom,
+      selector: row => row.uom,
       sortable: true,
     },
 
     {
       name: 'Value',
       cell: row => row.uom_value,
+      selector: row => row.uom_value,
       sortable: true,
     },
     {
       name: 'SA Qty',
       cell: row => row.suggested_allocation_quantity,
+      selector: row => row.suggested_allocation_quantity,
       sortable: true,
     },
 
     {
       name: 'Percentage',
       cell: row => row.percentage_quantity,
+      selector: row => row.percentage_quantity,
       sortable: true,
     },
     {
@@ -295,26 +305,37 @@ function StockAllocation(props) {
     {
         name: 'Product ID',
         cell: row => row.product_id,
+        selector: row => row.product_id,
         sortable: true,
     },
     {
         name: 'Product Name',
         cell: row => row.product_name,
+        selector: row => row.product_name,
         sortable: true,
     },
     {
         name: 'UOM',
         cell: row => row.uom,
+        selector: row => row.uom,
         sortable: true,
     },
     {
         name: 'UOM Value',
         cell: row => row.uom_value,
+        selector: row => row.uom_value,
         sortable: true,
     },
     {
         name: 'SA Summary',
         cell: row => row.total,
+        selector: row => row.total,
+        sortable: true,
+    },
+    {
+        name: 'Total Price',
+        cell: row => row.price,
+        selector: row => row.price,
         sortable: true,
     },
   ]

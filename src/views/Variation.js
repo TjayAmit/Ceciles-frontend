@@ -31,6 +31,7 @@ import { PolarAreaController } from "chart.js";
 function Variation() {
   const [Variation, setVariation] = useState([])
   const [modifier, setModifier] = useState([])
+  const [isvariationup,setIsVariationUp] = useState(false); 
 
   const [warning, setWarning] = useState('');
   const [warningmodal, setWarningModal] = useState(false);
@@ -157,47 +158,69 @@ function Variation() {
 
   // Function
   const AddVariation = () => {
-    if(variation_label != '' && variation_value !=''){
-        axios.post("http://localhost:5000/ceciles/variations/",{
-            label:variation_label,
-            value:variation_value,
-          }).then((response) =>{
-            if(response.data.success == 1){
-                setModalAddVariation(false);
-                retrieveVariation();
-                setVariationLabel('');
-                setVariationValue('');
-            } else {
-                console.log(response.data.message);
-            }
-        });
+    if(isvariationup == true){
+      if(variation_label != '' && variation_value !=''){
+          axios.post("http://localhost:5000/ceciles/variations/",{
+              label:variation_label,
+              value:variation_value,
+            }).then((response) =>{
+              if(response.data.success == 1){
+                  setModalAddVariation(false);
+                  retrieveVariation();
+                  setVariationLabel('');
+                  setVariationValue('');
+              } else {
+                  console.log(response.data.message);
+              }
+          });
+      }
+    }else{
+      axios.put(`http://localhost:5000/ceciles/variations/edit/${variation_id}`,{
+          label:variation_label,
+          value:variation_value/100,
+        }).then((response) =>{
+          if(response.data.success == 1){
+              setModalAddVariation(false);
+              retrieveVariation();
+              setVariationLabel('');
+              setVariationValue('');
+          } else {
+              console.log(response.data.message);
+          }
+      });
     }
   }
 
-  const DeleteVariation = () => {
-    axios.delete("http://localhost:5000/ceciles/variations/"    )
+  const DeleteVariation = (id) => {
+    axios.delete(`http://localhost:5000/ceciles/variations/delete/${id}`    )
     .then((response) =>{
         if(response.data.success == 1){
-            console.log(response.data.message);
-        } else {
-            console.log("response.data.message");
+          retrieveVariation();
+        }
+        if(response.data.success == -1){
+          if(response.data.message.sqlState == 23000){
+            setWarning("This variation is in used.")
+            setWarningModal(true)
+          }
         }
     });
     setModalAddVariation(false);
   }
 
   const DeleteModifier = (id) => {
-    axios.delete(`http://localhost:5000/ceciles/modifiers/${id}`)
+    axios.delete(`http://localhost:5000/ceciles/modifiers/delete/${id}`)
     .then((response) =>{
         if(response.data.success == 1){
           retrieveModifier();
-        } else {
-            console.log(response.data);
+        }
+        if(response.data.success == -1){
+          console.log(response.data.message)
         }
     });
     setModalAddVariation(false);
   }
 
+  
   // Function
   const AddModifier = () => {
     if(productID != '' && branchID !='' && variationID != '' && manufacturerID !='' ){
@@ -245,7 +268,8 @@ function Variation() {
     setBranchListModel(false);
   }
 
-  const selectedVariation = (row) => {
+  const selectedVariation = (row) =>
+   {
     setVariateID(row.variation_id);
     setVariateLabel(row.variation_label);
     setVariationListModel(false);
@@ -281,6 +305,19 @@ function Variation() {
     setVariationListModel(false)
   }
 
+  const EditVariation = (row) => {
+    setIsVariationUp(false);
+    setVariationID(row.variation_id);
+    setVariationLabel(row.variation_label);
+    setVariationValue(row.variation_value * 100);
+    setModalAddVariation(true); 
+  }
+
+  const setVariationNewModal = () => {
+    setIsVariationUp(true)
+    setModalAddVariation(true)
+  }
+
   useEffect(() => {
     retrieveModifier();
     retrieveVariation();
@@ -312,13 +349,13 @@ function Variation() {
       },
       {
         name:'Percent',
-        cell: row => row.variation_value,
+        cell: row => parseInt(row.variation_value * 100) + '%',
         selector: row => row.variation_value,
         sortable:true,
       },
       {
         name: '',
-        cell: row => <Button color="success" type="button" className="btn-round" onClick={() => EditVariation(row.variation_id) }>Edit</Button>,
+        cell: row => <Button color="success" type="button" className="btn-round" onClick={() => EditVariation(row) }>Edit</Button>,
         ignoreRowClick: true,
         allowOverflow: true,
         button: true,
@@ -434,7 +471,7 @@ function Variation() {
     },
     {
       name:'Percent',
-      cell: row => row.variation_value,
+      cell: row =>  parseInt(row.variation_value * 100) + '%',
       selector: row => row.variation_value,
       sortable:true,
     },
@@ -463,7 +500,7 @@ function Variation() {
     },
     {
         name: 'Value',
-        cell: row => row.variation_value,
+        cell: row =>  parseInt(row.variation_value * 100) + '%',
         selector: row => row.variation_value,
         sortable: true,
     },
@@ -634,7 +671,7 @@ function Variation() {
 
         <Modal isOpen={modalAddVariation}  className="modal-md" modalClassName="bd-example-modal-lg" centered>
             <div className="modal-header">
-                <h3 className="modal-title" id="myLargeModalLabel">New Variation</h3>
+                {isvariationup == true?<h3 className="modal-title" id="myLargeModalLabel">New Variation</h3>:<h3 className="modal-title" id="myLargeModalLabel">Update Variation</h3>}
             </div>
 
             <div className="modal-body">
@@ -644,12 +681,12 @@ function Variation() {
                             <Col md={12}>
                                 <FormGroup className="col-md-12">
                                     <label htmlFor="label">Variation Label</label>
-                                    <Input id="label" type="text" onChange={(e) => setVariationLabel(e.target.value)} />
+                                    <Input id="label" type="text" value={variation_label}  onChange={(e) => setVariationLabel(e.target.value)} />
                                 </FormGroup>
 
                                 <FormGroup className="col-md-12">
                                     <label htmlFor="value">Percent Value</label>
-                                    <Input id="value" type="text" onChange={(e) => setVariationValue(e.target.value)} />
+                                    <Input id="value" type="text" value = {variation_value} onChange={(e) => setVariationValue(e.target.value)} />
                                 </FormGroup>
                             </Col>
                         </div>
@@ -682,7 +719,7 @@ function Variation() {
                                 </h3>
                             </div>
                             <div className="px-2">
-                                <Button color="info" type="button" className="btn-round" onClick={() => setModalAddVariation(true)}>
+                                <Button color="info" type="button" className="btn-round" onClick={() => setVariationNewModal()}>
                                     <i className="now-ui-icons ui-1_simple-add" /> New Variation
                                 </Button>
                             </div>
@@ -861,7 +898,7 @@ function Variation() {
           </div>
           <div className="modal-footer">
               <div className="ml-auto">
-                  <Button className="btn-round" color="info" size="lg" onClick={() => setWarningModal(true) }>Close</Button>
+                  <Button className="btn-round" color="info" size="lg" onClick={(e) => setWarningModal(false) }>Close</Button>
               </div>
           </div>
       </Modal>

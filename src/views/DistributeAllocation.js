@@ -28,8 +28,6 @@ import { createPortal } from "react-dom";
 
 function DistributeAllocation(props) {
   //Fetch allocation base on allocation date
-  const [date, setDate] = useState("2022-02-27")
-  const [listdate,setListDate] = useState({})
   
   const [allodate,setAlloDate] = useState();
   const [SRdate, setSRDate] = useState("");
@@ -39,6 +37,8 @@ function DistributeAllocation(props) {
   const [branchname, setBranchName] = useState('')
   
   const [item, setItem] = useState([])
+
+  const [option, setOption] = useState([])
 
   //Modal
   const [modalView, setModalView] = useState(false)
@@ -54,6 +54,9 @@ function DistributeAllocation(props) {
   const [generatedisfeedback,setGenerateDistributionFeedback] = useState(false)
   const [showSpin,setShowSpin] = useState(true)
 
+  const [dateoption,setDateOption] = useState('');
+  const [manufactureroption,setManufacturerOption] = useState('');
+
   
 
   function getItem(){
@@ -63,15 +66,17 @@ function DistributeAllocation(props) {
   }
 
   const getItem2 = (branch) => {  
-    if(SRdate != '' && SRdate != null){
-      console.log('called ' + SRdate )
+    if(dateoption != '' && dateoption != null){
       return axios.post("http://localhost:5000/ceciles/distributions/bydate",{
            branchname:branch,
-           allocation_date:SRdate
+           allocation_date:dateoption,
+           manufacturer:manufactureroption  
        })
     }
     return axios.post("http://localhost:5000/ceciles/distributions/bybranches",{
-         branch
+         branch,
+         allocation_date:dateoption,
+         manufacturer:manufactureroption
      })
    }
    
@@ -85,7 +90,8 @@ function DistributeAllocation(props) {
   const generateDistribution = async () => {
     setGenerateDistributionFeedback(true)
     await axios.put("http://localhost:5000/ceciles/distributions/generatedistribution",{
-      allocation_date:allodate
+      allocation_date:dateoption,
+      manufacturer:manufactureroption,
     })
       .then((response) =>{
         if(response.data.success == 1){
@@ -105,7 +111,10 @@ function DistributeAllocation(props) {
 
   const saveDistribution = async() => {
     setFeedBackDistribution(true)
-    await axios.post("http://localhost:5000/ceciles/distributions/save")
+    await axios.post("http://localhost:5000/ceciles/distributions/save",{
+      allocation_date:dateoption,
+      manufacturer:manufactureroption
+    })
       .then((response) =>{
         if(response.data.success == 1){
             setSpinner(false)
@@ -113,22 +122,21 @@ function DistributeAllocation(props) {
         }
         if(response.data.success == 0){
           setSpinner(false)
-          setFeedLabel('Problem occure while saving allocation')
+          setFeedLabel('Problem occure while saving distribution')
         }
         if(response.data.success == -1){
           setSpinner(false)
-          setFeedLabel('Problem occure while saving allocation')
+          setFeedLabel('Problem occure while saving distribution')
         }
     });
   }
   
   const rowDelete = (dis) => {
-    axios.delete(`http://localhost:5000/ceciles/distributions/`,{
-      distribution_id:dis
-    }).then(async(response) => {
+    axios.delete(`http://localhost:5000/ceciles/distributions/delete/${dis}`).then(async(response) => {
       console.log(response)
       if(response.data.success == 1){
-        await getItem2(branchname).then((response) => {
+        await getItem2(branchname)
+        .then((response) => {
           setItem(response.data.data)
         })
       }
@@ -149,23 +157,22 @@ function DistributeAllocation(props) {
     setFeedLabel('Saving Distribution')
   }
 
-
-  async function getDate() {
-    await axios.get("http://localhost:5000/ceciles/distributions/listdates").then((response) => {
-      console.log(response.data.data[0].allo_date)
+  async function getDateSelect() {
+    await axios.get("http://localhost:5000/ceciles/distributions/byselect").then((response) => {
       if(response.data.success == 1){
-        const defaultValue = new Date(response.data.data[0].allo_date).toISOString().split('T')[0];
-        setAlloDate(defaultValue)
+        setOption(response.data.data);
+        const list = response.data.data[0]["label"].split(' ');
+        setDateOption(list[0]);
+        setManufacturerOption(list[1]);
       }
       if(response.data.success == 0){
-        const default2Value = new Date().toISOString().split('T')[0];
-        setAlloDate(default2Value)
+        console.log(response.data.message)
       }
     })
   }
 
   useEffect(() => {
-    getDate();
+    getDateSelect();
     async function getBranches() {
       const { data: {data} } = await axios.get("http://localhost:5000/ceciles/models/listbranches")
       setBranches(data)
@@ -179,12 +186,11 @@ function DistributeAllocation(props) {
 
   },[])
 
-  const fetchDataBaseDate = async(value) => {
-    setSRDate(value);
-    const allocation_items = getItem2(branch)
-    setItem((await allocation_items).data.data)
+  const updateManufacturer = (value) => {
+    const list = value.label.split(' ');
+    setDateOption(list[0]);
+    setManufacturerOption(list[1]);
   }
-
   
   const columns = [
     {
@@ -233,7 +239,7 @@ function DistributeAllocation(props) {
       sortable: true,
     },
     {
-      name: 'SA Qty',
+      name: 'SO Qty',
       cell: row => row.suggested_allocation_quantity,
       selector: row => row.suggested_allocation_quantity,
       sortable: true,
@@ -246,13 +252,13 @@ function DistributeAllocation(props) {
     },
     {
       name: 'Percentage',
-      cell: row => row.percentage_quantity,
+      cell: row => parseInt(row.percentage_quantity * 100) + '%',
       selector: row => row.percentage_quantity,
       sortable: true,
     },
     {
       name: '',
-      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.distribution_id) }>Delete</Button>,
+      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row) }>Delete</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -272,11 +278,8 @@ function DistributeAllocation(props) {
                     <Navbar expand="lg" color="light">
                       <Collapse navbar>
                           <Form inline className="auto" >
-                            <span >Allocation Date</span>
-                            <Col md={6}> 
-                              <div className='custom-file'>
-                                <Input id="allocation_date" defaultValue={allodate} type="date" onChange={(e) =>fetchDataBaseDate(e.target.value)} />
-                              </div>
+                            <Col md = {12}>
+                              <Select  placeholder="Select PO" onChange={(value) => {updateManufacturer(value)}}  options={option}/>
                             </Col>
                           </Form>
                           <Form inline className="ml-auto">
@@ -309,7 +312,7 @@ function DistributeAllocation(props) {
       </div>
       
       {/* MODAL  VIEW*/}
-      <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setModalView(false)}>
+      <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg">
         <div className="modal-header">
           <h4 className="modal-title" id="myLargeModalLabel">
             {branchname} Distribution

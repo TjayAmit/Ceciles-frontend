@@ -301,7 +301,7 @@ function RegularTables() {
                               <i className="now-ui-icons ui-1_simple-add" /> New Product
                             </Button>
                             <Button color="secondary" type="button" className="btn-round" size="md" onClick={() => setModalImport(true)}> 
-                              <i className="now-ui-icons ui-1_simple-add" /> Import Product
+                               Import Product
                             </Button>
                         </Form>
                     </Collapse>

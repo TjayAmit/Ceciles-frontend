@@ -72,10 +72,10 @@ function RegularTables() {
       cell: row => row.product_name,
       selector: row => row.product_name,
       sortable: true,
-      width:'20%'
+      width:'30%'
     },
     {
-      name: 'SA',
+      name: 'SO',
       cell: row => row.suggested_allocation_quantity,
       selector: row => row.suggested_allocation_quantity,
       sortable: true,
@@ -89,24 +89,24 @@ function RegularTables() {
     },
     {
       name: 'Percent',
-      cell: row => row.percentage_quantity,
+      cell: row => parseInt(row.percentage_quantity * 100) + '%',
       selector: row => row.percentage_quantity,
       sortable: true,
     },
-    {
-      name: 'Allocation Date',
-      cell: row => row.allo_date,
-      selector: row => row.allo_date,
-      sortable: true,
-      width:"13%"
-    },
-    {
-      name: 'Distribution Date',
-      cell: row => row.dis_date,
-      selector: row => row.dis_date,
-      sortable: true,
-      width:"13%"
-    },
+    // {
+    //   name: 'Allocation Date',
+    //   cell: row => row.allo_date,
+    //   selector: row => row.allo_date,
+    //   sortable: true,
+    //   width:"13%"
+    // },
+    // {
+    //   name: 'Distribution Date',
+    //   cell: row => row.dis_date,
+    //   selector: row => row.dis_date,
+    //   sortable: true,
+    //   width:"13%"
+    // },
   ]
 
   const { getRootProps, getInputProps } = useDropzone({

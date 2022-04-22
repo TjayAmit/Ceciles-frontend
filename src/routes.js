@@ -37,7 +37,7 @@ var dashRoutes = [
 
   {
     path: "/stock-generated",
-    name: "Stock Generated",
+    name: "Suggested Order",
     icon: "files_paper",
     component: StockAllocation,
     layout: "/admin",

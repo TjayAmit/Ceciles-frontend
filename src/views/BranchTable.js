@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import DataTable from "react-data-table-component"
-import DataTableExtensions from "react-data-table-component"
+import DataTableExtensions from 'react-data-table-component-extensions';
 
 // reactstrap components
 import {
@@ -154,19 +154,21 @@ function BranchTable() {
         cell: row => row.branch_name,
         selector: row => row.branch_name,
         sortable: true,
+        width:"17%"
     },
     {
         name: 'In Transit code',
         cell: row => row.In_Transit_WH_code,
         selector: row => row.In_Transit_WH_code,
         sortable: true,
+        width:"17%"
     },
     {
         name: 'In Transit Name',
         cell: row => row.In_Transit_WH_Name,
         selector: row => row.In_Transit_WH_Name,
         sortable: true,
-        width:'17%'
+        width:'24%'
     },
     {
         name: 'Warehouse Code',
@@ -179,7 +181,7 @@ function BranchTable() {
         cell: row => row.Warehouse_Name,
         selector: row => row.Warehouse_Name,
         sortable: true,
-        width:'17%'
+        width:'24%'
     },
     {
       cell: row => <Button color="info" type="button" className="btn-round" onClick={() => viewInventory(row.branch_name)}>Inventory</Button>,
@@ -240,14 +242,14 @@ function BranchTable() {
         selector: row => row.inventory_date,
         sortable: true,
         width:'17%'
-    },
-    {
-      cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row.inventory_id)}>Edit</Button>,
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      selectableRows: true,
-    },
+    }
+    // {
+    //   cell: row => <Button color="success" type="button" className="btn-round" onClick={() => rowEdit(row.inventory_id)}>Edit</Button>,
+    //   ignoreRowClick: true,
+    //   allowOverflow: true,
+    //   button: true,
+    //   selectableRows: true,
+    // },
   ]
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -313,7 +315,7 @@ function BranchTable() {
         </div>
         
       {/* MODAL  VIEW*/}
-      <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setModalView(false)}>
+      <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg" >
         <div className="modal-header">
           <h4 className="modal-title" id="myLargeModalLabel">
             {branchname} Inventory
@@ -323,7 +325,7 @@ function BranchTable() {
           </button>
         </div>
 
-        <div className="modal-body">
+        {/* <div className="modal-body"> */}
           <DataTableExtensions columns={itm} data={item}>
             <DataTable 
               responsive
@@ -331,10 +333,10 @@ function BranchTable() {
               columns={itm} 
               data={item}
               highlightOnHover
-              pointerOnHover
+              // pointerOnHover
             />
           </DataTableExtensions>
-        </div>
+        {/* </div> */}
       </Modal>
 
         <Modal isOpen={modalEditVariation} className="modal-lg" modalClassName="bd-example-modal-lg" toggle={() => closeModal(false)}>

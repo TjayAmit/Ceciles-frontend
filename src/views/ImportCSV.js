@@ -1,4 +1,5 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState , Component} from 'react';
+import Select from 'react-select'
 import Message from './Message';
 import axios from 'axios';
 
@@ -20,7 +21,6 @@ import {
 
 const ImportCSV = () => {
 
-
   const [file, setFile] = useState('');
   const [filename, setFilename] = useState('Choose File');
   const [fileReport, setFileReport] = useState('');
@@ -32,6 +32,25 @@ const ImportCSV = () => {
   const [saveimportlabel, setSaveImportLabel] = useState('Importing Data...')
   const [saveimportfeedback,setSaveImportFeedback] = useState(false)
 
+  const [checkvalue,setCheckValue] = useState(true);
+  const [optionvalue,setOptionValue] = useState(0);
+  const [inventorygoalvalue,setInventoryGoal] = useState(0);
+
+
+  
+  const options = [
+    { index:0, value: 30, label: '1 Month(30 days)'},
+    { index:2,value: 60, label: '2 Months(60 days)' },
+    { index:4,value: 90, label: '3 Months(90 days)'},
+  ]
+
+  const inventory_goal = [
+    { index:0, value: 30, label: '30 days'},
+    { index:1,value: 45, label: '45 days'},
+    { index:2,value: 60, label: '60 days' },
+    { index:3,value: 75, label: '75 days'},
+    { index:4,value: 90, label: '90 days'},
+  ]
 
   const saveImportData = async () => {
     setTimeout(() => {
@@ -54,6 +73,14 @@ const ImportCSV = () => {
     setFileReportname(e.target.files[0].name);
   };
 
+  const updateOptionValue = (option) => {
+    setOptionValue(option.value);
+  }
+
+  const updateInventoryGoal = (goal) => {
+    setInventoryGoal(goal.value);
+  }
+
   const onSubmitReport = async e => {
     //Sales Report
     e.preventDefault();
@@ -71,18 +98,21 @@ const ImportCSV = () => {
 
       await axios.post('http://localhost:5000/ceciles/allocations/importsales', {
         filename: filename,
-        solddate: SRdate
+        months:optionvalue,
       })
-      .then(function (response) {
-        console.log(response.data.data)
-        if(response.data.success == 1){
+      .then( (response) => {
+        if(response.data.success == -1){
           setTimeout(() => {
-            setSalesMessage('Sales Report uploaded successfully');
+            setSalesMessage(response.data.message);
+          }, 1000);
+        }if(response.data.success == 1){
+          setTimeout(() => {
+            setSalesMessage('Sales Report successfully');
           }, 1000);
         }
         if(response.data.success == 0){
           setTimeout(() => {
-            setSalesMessage('Something went wrong while  Sales Report');
+            setSalesMessage(response.data.message);
           }, 1000);
         }
       })
@@ -93,19 +123,22 @@ const ImportCSV = () => {
       setFileReport('');
       setFileReportname('Choose File');
     } catch (err) {
-      if (err) {
-        setSalesMessage(err.message);
-      } else {
-        setSalesMessage(err.response.data.msg);
+      if(err.message == "Network Error"){
+        setSalesMessage("It seems the server is offline");
       }
     }
   };
 
   const executeProcess2 = async () => {
-    await axios.post('http://localhost:5000/ceciles/allocations/importprocess2').
+    await axios.post('http://localhost:5000/ceciles/allocations/importprocess2',{
+      date:optionvalue
+    }).
       then((res) => {
         if(res.data.success == 1 ){
-          setStockMessage('Generating Allocation');
+          if(checkvalue == true){
+            setStockMessage('Generating Allocation');
+          }else{
+            setStockMessage('Inventories Successfully updated');}
         }
       }).catch((error)=>{
         console.log(error)
@@ -144,11 +177,15 @@ const ImportCSV = () => {
 
       const process1 = await axios.post('http://localhost:5000/ceciles/allocations/importstock', {
         filename: filename,
+        months:inventorygoalvalue,
+        isupdate_inventory:checkvalue,
       }).then(async(response) => {
         if(response.data.success == 1){
           setStockMessage('Updating Inventories');
-          await executeProcess2()
-          await executeProcess3()
+          await executeProcess2()   
+          if(checkvalue == true){
+            await executeProcess3()
+          }
         }
         if(response.data.success == 0){
           setTimeout(() => {
@@ -175,10 +212,8 @@ const ImportCSV = () => {
       setFileReport('');
       setFileReportname('Choose File');
     } catch (err) {
-      if (err) {
-        setStockMessage(err.message);
-      } else {
-        setStockMessage(err.response.data.msg);
+      if(err.message == "Network Error"){
+        setStockMessage("It seems the server is offline");
       }
     }
   };
@@ -200,7 +235,7 @@ const ImportCSV = () => {
               <CardBody>
                 <div className="chart-area">
                   <form onSubmit={onSubmitStatus}>
-                    <p className='text-dark text-center'>Import here the CSV file of Stock Status</p>
+                    <p className='text-dark text-center'>Import Stock Status CSV file </p>
                     <div className="container">
                       <Col md={12}>
                         <div className='custom-file mb-4'>
@@ -214,7 +249,15 @@ const ImportCSV = () => {
                             {filename}
                           </label>
                         </div>
-
+                        <Row xs={2}>
+                          <Col md={5}>
+                            <Input type="checkbox" checked={checkvalue} onChange={(e) => setCheckValue(e.target.checked)} />
+                            <label htmlFor="label">Generate Suggested Order</label> 
+                          </Col>
+                          <Col md = {7}>
+                            <Select  placeholder="Monthly Goal" onChange={(value) => {updateInventoryGoal(value)}}  options={inventory_goal}/>
+                          </Col>
+                        </Row>
                         <input
                         type='submit'
                         value='Upload'
@@ -243,30 +286,28 @@ const ImportCSV = () => {
               <CardBody>
                 <div className="chart-area">
                   <form onSubmit={onSubmitReport}>
-                    <p className='text-dark text-center'>Import here the CSV file of Sales Report</p>
+                    <p className='text-dark text-center'>Import Sales Report CSV file </p>
                     <div className="container"> 
                       <div className="row">
-                        <Col md={6}> 
-                          <div className='custom-file'>
-                            <Input id="allocation_date" type="date" onChange={(e) => setSRDate(e.target.value)} />
-                          </div>
-                        </Col>
-
-                        <Col md={6}> 
+                        <Col md={12}>
                           <div className='custom-file mb-4'>
-                          <input
-                              type='file'
-                              className='custom-file-input'
-                              id='customFile'
-                              onChange={onChangeReport}
-                            />
+                            <input
+                                type='file'
+                                className='custom-file-input'
+                                id='customFile'
+                                onChange={onChangeReport}
+                              />
                             
                             <label className='custom-file-label' htmlFor='customFile'>
                               {fileReportname}
                             </label>
                           </div>
+                              <Row xs={2}>
+                                <Col md = {12}>
+                                  <Select  placeholder="Sales Report Number of Months" onChange={(value) => {updateOptionValue(value)}}  options={options}/>
+                                </Col>
+                              </Row>
                         </Col>
-
                         <Col>
                           <div className="text-center">
                             <input

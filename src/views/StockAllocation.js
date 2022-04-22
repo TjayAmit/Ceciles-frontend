@@ -30,6 +30,7 @@ import { BarController } from "chart.js";
 
 function StockAllocation(props) {
   const [branches, setBranches] = useState([])
+  const [checkvalue, setCheckValue] = useState(false);
 
   const [item, setItem] = useState([])
   const [branchname, setBranchName] = useState('')
@@ -45,7 +46,8 @@ function StockAllocation(props) {
   const [editSugID,setEditSugID] = useState('')
   const [editPID,setEditPID] = useState('')
   const [editPN,setEditPN] = useState('')
-  const [editSA,setEditSA] = useState('')
+  const [setSA,setSAValue] = useState('')
+  const [setedit,setEditSAValue] = useState('')
   const [editPercent,setEditPercent] = useState('')
 
   //Modal
@@ -87,6 +89,23 @@ function StockAllocation(props) {
           branch
       })
   }
+
+  const changeCheckDisplay = (value) => {
+    setCheckValue(value);
+    if(value == true){
+      axios.get("http://localhost:5000/ceciles/allocations/asw").then((response) => {
+        if(response.data.success == 1){
+          setSummaryAllocation(response.data.data)
+        }
+      });
+    }else{
+      axios.get("http://localhost:5000/ceciles/allocations/as").then((response) => {
+        if(response.data.success == 1){
+          setSummaryAllocation(response.data.data)
+        }
+      });
+    }
+  }
   
   const viewBranch = async (branches) => {
     setBranchName(branches)
@@ -110,15 +129,15 @@ function StockAllocation(props) {
     axios.post("http://localhost:5000/ceciles/allocations/saveallocation").then((response) => {
       if(response.data.success==1){
         setShowSpin(false)
-        setSaveAlloLabel('Allocation successfully save')
+        setSaveAlloLabel('PO successfully save')
       }
       if(response.data.success == 0){
         setShowSpin(false)
-        setSaveAlloLabel('Problem occure while saving allocation')
+        setSaveAlloLabel('Problem occure while saving PO')
       }
       if(response.data.success == -1){
         setShowSpin(false)
-        setSaveAlloLabel('Problem occure while saving allocation')
+        setSaveAlloLabel('Problem occure while saving PO')
       }
     })
   }
@@ -136,16 +155,14 @@ function StockAllocation(props) {
   }
 
   const viewAllocationSummary = async () =>{
-
+    setCheckValue(false)
     const summaryallocation_items = await getAllocationSummary()
     setSummaryAllocation(summaryallocation_items.data.data)
     setSummaryModalView(true)
   }
 
-  const rowDelete = (suggested_id) => {
-      axios.post("http://localhost:5000/ceciles/allocations/delete",{
-          suggested_id,
-      })
+  const rowDelete = (row) => {
+      axios.delete(`http://localhost:5000/ceciles/allocations/delete/${row.suggested_id}`)
       .then((response) =>{
         if(response.data.success == 1){
           viewBranch2()
@@ -160,18 +177,20 @@ function StockAllocation(props) {
     setEditSugID(row.suggested_id)
     setEditPID(row.product_id)
     setEditPN(row.product_name)
-    setEditSA(row.suggested_allocation_quantity)
-    setEditPercent(row.percentage_quantity)
+    setSAValue(row.suggested_allocation_quantity)
+    setEditSAValue(row.updated_allocation_quantity)
+    setEditPercent(parseInt(row.percentage_quantity * 100) + '%')
     setModalEditVariation(true)
     setModalView(false)
   }
 
   const updateStockVariation = () => {
     axios.put("http://localhost:5000/ceciles/allocations/",{
-        editSugID,
-        editPID,
-        editSA,
+        suggested_id:editSugID,
+        product_id:editPID,
+        updated_so:setedit,
       }).then((response) =>{
+        console.log(response)
         if(response.data.success == 1){
           viewBranch(branchname)
           setModalEditVariation(false);
@@ -179,6 +198,11 @@ function StockAllocation(props) {
             console.log("response.data.message");
         }
     });
+  }
+
+  const defaultModalVariation = () => {
+    viewBranch(branchname)
+    setModalEditVariation(false);
   }
 
   
@@ -273,15 +297,20 @@ function StockAllocation(props) {
       sortable: true,
     },
     {
-      name: 'SA Qty',
+      name: 'SO Qty',
       cell: row => row.suggested_allocation_quantity,
-      selector: row => row.suggested_allocation_quantity,
+      selector: row =>row.suggested_allocation_quantity,
       sortable: true,
     },
-
+    {
+      name: 'Edit Qty',
+      cell: row => row.updated_allocation_quantity,
+      selector: row => row.updated_allocation_quantity,
+      sortable: true,
+    },
     {
       name: 'Percentage',
-      cell: row => row.percentage_quantity,
+      cell: row => parseInt(row.percentage_quantity * 100) + '%',
       selector: row => row.percentage_quantity,
       sortable: true,
     },
@@ -294,7 +323,7 @@ function StockAllocation(props) {
   
     {
       name: '',
-      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row.suggested_id) }>Delete</Button>,
+      cell: row => <Button color="danger" type="button" className="btn-round" onClick={() => rowDelete(row) }>Delete</Button>,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -327,7 +356,7 @@ function StockAllocation(props) {
         sortable: true,
     },
     {
-        name: 'SA Summary',
+        name: 'SO Summary',
         cell: row => row.total,
         selector: row => row.total,
         sortable: true,
@@ -360,7 +389,7 @@ function StockAllocation(props) {
                                 View Summary
                             </Button>
                             <Button color="secondary" type="button" className="btn-round" size="md" onClick={() => saveAllocation()}> 
-                                Save Allocation
+                                Save Suggested Order
                             </Button>
                           </Form>
                       </Collapse>
@@ -388,7 +417,7 @@ function StockAllocation(props) {
       <Modal isOpen={modalView} className="modal-xl" modalClassName="bd-example-modal-lg" toggle={() => setModalView(false)}>
         <div className="modal-header">
           <h4 className="modal-title" id="myLargeModalLabel">
-            {branchname} Stock Allocation
+            {branchname} Suggested Order
           </h4>
           <button aria-label="Close" className="close" type="button" onClick={() => setModalView(false)}>
             <span aria-hidden={true}>×</span>
@@ -412,16 +441,20 @@ function StockAllocation(props) {
       
       {/* MODAL  VIEW*/}
       <Modal isOpen={summaryModalView} className="modal-xl" modalClassName="bd-example-modal-lg">
-        <div className="modal-header">
-          <h4 className="modal-title" id="myLargeModalLabel">
-            Allocation Summary
-          </h4>
-          <button aria-label="Close" className="close" type="button" onClick={() => setSummaryModalView(false)}>
-            <span aria-hidden={true}>×</span>
-          </button>
+        <div className="modal-header" >
+              <h3 className="modal-title" id="myLargeModalLabel">
+                Suggested Order Summary
+              </h3>
+            <button aria-label="Close" className="close" type="button" onClick={() => setSummaryModalView(false)}>
+              <span aria-hidden={true}>×</span>
+            </button>
         </div>
 
         <div className="modal-body">
+          <Col >
+              <Input type="checkbox" checked={checkvalue} onChange={(e) => changeCheckDisplay(e.target.checked)} />
+              <label htmlFor="label">Hide Zero Value (SO Summary)</label> 
+          </Col>
           <DataTableExtensions columns={summaryitems} data={summaryallocation}>
             <DataTable 
               responsive
@@ -445,7 +478,7 @@ function StockAllocation(props) {
                       <Row xs={2}>
                           <Col md={6}>
                               <FormGroup className="col-md-12">
-                                  <label htmlFor="label">Allocation ID</label>
+                                  <label htmlFor="label">Suggested order ID</label>
                                   <Input id="label" value={editSugID} type="text" />
                               </FormGroup>
                               <FormGroup className="col-md-12">
@@ -463,8 +496,12 @@ function StockAllocation(props) {
                                   <Input id="value" value={editPercent} type="text" />
                               </FormGroup>
                               <FormGroup className="col-md-12">
-                                  <label htmlFor="label">Suggested Allocation</label>
-                                  <Input id="label" value={editSA} type="text" onChange={(e) => setEditSA(e.target.value)} />
+                                  <label htmlFor="label">Suggested order</label>
+                                  <Input id="label" value={setSA} type="text" />
+                              </FormGroup>
+                              <FormGroup className="col-md-12">
+                                  <label htmlFor="label">New Suggested order</label>
+                                  <Input id="label" value={setedit} type="text" onChange={(e) => setEditSAValue(e.target.value)} />
                               </FormGroup>
                           </Col>
                       </Row>
@@ -474,7 +511,7 @@ function StockAllocation(props) {
 
             <div className="modal-footer">
                 <div className="ml-auto">
-                    <Button className="btn-round" color="secondary" size="md" onClick={() => setModalEditVariation(false) }>Cancel</Button>
+                    <Button className="btn-round" color="secondary" size="md" onClick={() => defaultModalVariation() }>Cancel</Button>
                     <span> </span>
                     <Button className="btn-round" color="success" size="md" onClick={() => updateStockVariation() }>Submit</Button>
                 </div>
